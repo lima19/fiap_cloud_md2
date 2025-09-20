@@ -1,12 +1,12 @@
-name: CD - Push
+name: CI - Pull Request
 
 on:
   push:
     branches:
-      - develop   # gera artefatos para QA
+      - develop   # dispara apenas PRs para develop
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,21 +26,8 @@ jobs:
 
       - name: Test (opcional)
         run: |
-          if ls **/*.Tests.csproj 1> /dev/null 2>&1; then
+          if ls **/*.Test.csproj 1> /dev/null 2>&1; then
             dotnet test --configuration Release --no-build
           else
             echo "Nenhum projeto de teste encontrado, ignorando etapa de testes."
           fi
-
-      - name: Publish artifacts
-        run: dotnet publish --configuration Release --no-build --output ./publish
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: drop
-          path: ./publish
-
-      # Exemplo de deploy opcional (ajustar para seu ambiente)
-      # - name: Deploy to QA/Production
-      #   run: ./scripts/deploy.sh
