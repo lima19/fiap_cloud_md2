@@ -1,0 +1,44 @@
+name: CD - Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main   # CD roda quando há push/merge na main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj
+
+      - name: Build project
+        run: dotnet build src/FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj --configuration Release --no-restore
+
+      - name: Publish project
+        run: dotnet publish src/FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj --configuration Release --no-build --output ./publish
+
+      # Exemplo: upload artefatos (se quiser guardar)
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: drop
+          path: ./publish
+
+      # Exemplo: deploy em Azure WebApp (opcional, caso use Azure)
+      # - name: Deploy to Azure WebApp
+      #   uses: azure/webapps-deploy@v2
+      #   with:
+      #     app-name: 'meu-app-api'
+      #     slot-name: 'production'
+      #     publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+      #     package: ./publish

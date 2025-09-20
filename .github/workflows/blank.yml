@@ -1,0 +1,33 @@
+name: CI - Push Request
+
+on:
+  push:
+    branches:
+      - develop   # dispara apenas PRs para develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restaurar dependências
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test (opcional)
+        run: |
+          if ls **/*.Test/*.csproj 1> /dev/null 2>&1; then
+            dotnet test --configuration Release --no-build
+          else
+            echo "Nenhum projeto de teste encontrado, ignorando etapa de testes."
+          fi
