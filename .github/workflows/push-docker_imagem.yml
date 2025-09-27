@@ -23,7 +23,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./FIAP.CloudGames.Api    # caminho onde está o Dockerfile
-          file: ./FIAP.CloudGames.Api/Dockerfile  # caminho completo para o Dockerfile
+          context: ./src/FIAP.CloudGames.Api    # caminho onde está o Dockerfile
+          file: ./src/FIAP.CloudGames.Api/Dockerfile  # caminho completo para o Dockerfile
           push: true
           tags: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/cloudgames-api:pr-${{ github.event.pull_request.number }}
