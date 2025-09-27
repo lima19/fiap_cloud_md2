@@ -10,13 +10,14 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copia o .csproj e restaura as dependências primeiro para aproveitar o cache
-COPY ["FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj", "FIAP.CloudGames.Api/"]
-RUN dotnet restore "./FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj"
+COPY ["FIAP.CloudGames.sln", "."]
+COPY ["src/FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj", "FIAP.CloudGames.Api/"]
+RUN dotnet restore "FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj"
 
 # Copia o resto do código fonte
-COPY . .
+COPY ["src/.", "."]
 WORKDIR "/src/FIAP.CloudGames.Api"
-RUN dotnet build "./FIAP.CloudGames.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "FIAP.CloudGames.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Estágio de Publicação
 FROM build AS publish
