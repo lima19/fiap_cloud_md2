@@ -1,29 +1,30 @@
-# ===== Runtime base =====
+# Estágio Base para a imagem final
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-# ===== Build =====
+# Estágio de Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copiar apenas o csproj e restaurar dependências
-COPY FIAP.CloudGames.Api.csproj ./
-RUN dotnet restore FIAP.CloudGames.Api.csproj
+# Copia o .csproj e restaura as dependências primeiro para aproveitar o cache
+COPY ["FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj", "FIAP.CloudGames.Api/"]
+RUN dotnet restore "./FIAP.CloudGames.Api/FIAP.CloudGames.Api.csproj"
 
-# Copiar todo o restante do código
-COPY . ./
+# Copia o resto do código fonte
+COPY . .
+WORKDIR "/src/FIAP.CloudGames.Api"
+RUN dotnet build "./FIAP.CloudGames.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Build da aplicação
-RUN dotnet build FIAP.CloudGames.Api.csproj -c Release -o /app/build
-
-# ===== Publish =====
+# Estágio de Publicação
 FROM build AS publish
-RUN dotnet publish FIAP.CloudGames.Api.csproj -c Release -o /app/publish /p:UseAppHost=false
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./FIAP.CloudGames.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# ===== Final =====
+# Estágio Final
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish ./
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "FIAP.CloudGames.Api.dll"]
